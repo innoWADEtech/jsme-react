@@ -46,8 +46,10 @@ Required props
 
 Optional props
 * `options`: string that is a comma separated string of JSME options. The available options are described on the [JSME documentation page](https://peter-ertl.com/jsme/JSME_2017-02-26/doc.html#JSME_API)
-* `onChange`: event handler that is passed the smiles whenever it is changed in the editor
+* `onChange`: event handler that is passed the smiles, molFile whenever it is changed in the editor
+* `atomEvent`: event handler that is passed with event information whenever it is changed in the editor
 * `smiles`: the smiles to display (when not set an empty canvas will be shown)
+* `molFile`: the molFile V2 to display (when not set an empty canvas will be shown)
 * `src`: url of the jsme source code. Default value is `"https://jsme.cloud.douglasconnect.com/JSME_2017-02-26/jsme/jsme.nocache.js"`
 
 
