@@ -1,4 +1,5 @@
 # jsme-react
+Customized jsme-react to use as component in dash with atom and bond click and highlight as well as atom and bond marking. 
 
 This project wraps the BSD licensed [JSME molecule editor](https://peter-ertl.com/jsme/) (by B. Bienfait and P. Ertl) in a React component for easy use in React apps.
 
