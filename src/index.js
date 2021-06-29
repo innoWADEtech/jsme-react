@@ -24,6 +24,8 @@ export class Jsme extends React.PureComponent {
     this.myRef = React.createRef()
     this.id = `jsme${this.props.id}`;
     this.load = true
+    this.markedAtoms = this.props.markAtoms;
+    this.markedBonds = this.props.markBonds;
   }
 
   handleJsmeLoad = () => {
@@ -45,30 +47,30 @@ export class Jsme extends React.PureComponent {
 
       // mol File can be marked without callback needed
       if (this.props.molFile) {
-        if (this.props.atomsMarked) {
+        if (this.props.markAtoms) {
           this.jsmeApplet.resetAtomColors(0)
-          this.atomMarker(this.props.atomsMarked);
+          this.atomMarker(this.props.markAtoms);
         }
-        if (this.props.bondsMarked) {
-          console.log(this.props.bondsMarked)
+        if (this.props.markBonds) {
           this.jsmeApplet.resetBondColors(0);
-          this.jsmeApplet.setBondBackgroundColors(0, this.props.bondsMarked);
+          this.jsmeApplet.setBondBackgroundColors(0, this.props.markBonds);
         }
       }
+      // set actionCode to select menu item 
       if (this.props.actionCode) {
         this.jsmeApplet.setAction(parseInt(this.props.actionCode));
       }
     })();
   }
 
-  // atomHIghlight function callback
-  atomHighLight = (jsmeEvent) => {
+  // atomHighlight function callback
+  atomHighLighted = (jsmeEvent) => {
     if (this.props.atomHighlight) {
-      this.props.atomHighlight(jsmeEvent.atom)
+      this.props.atomHighlighted(jsmeEvent.atom)
     }
   }
 
-  // mark atoms with molfile to keep consistent with gui marking
+  // mark atoms with molfile to keep consistent with gui marking instead of set backgroundColor
   atomMarker = (atoms) => {
     let mol = this.jsmeApplet.jmeFile();
     let molList = mol.split(' ');
@@ -87,24 +89,23 @@ export class Jsme extends React.PureComponent {
   }
 
   // bondHighlight function callback
-  bondHighLight = (jsmeEvent) => {
-    if (this.props.bondHighlight) {
-      this.props.bondHighlight(jsmeEvent.bond)
+  bondHighLighted = (jsmeEvent) => {
+    if (this.props.bondHighlighted) {
+      this.props.bondHighlighted(jsmeEvent.bond)
     }
   }
 
   //atomClick function callback
-  atomClick = (jsmeEvent) => {
-    if (this.props.atomClick) {
-      this.props.atomClick(jsmeEvent.atom)
+  atomClicked = (jsmeEvent) => {
+    if (this.props.atomClicked) {
+      this.props.atomClicked(jsmeEvent.atom)
     }
   }
 
   // bondClick function callback
-  bondClick = (jsmeEvent) => {
-    console.log(jsmeEvent);
-    if (this.props.bondClick) {
-      this.props.bondClick(jsmeEvent.bond)
+  bondClicked = (jsmeEvent) => {
+    if (this.props.bondClicked) {
+      this.props.bondClicked(jsmeEvent.bond)
     }
   }
 
@@ -112,16 +113,17 @@ export class Jsme extends React.PureComponent {
   handleChange = (jsmeEvent) => {
     // update atom and bond markers for smiles file on startup
     if (jsmeEvent.action == "readSMILES" && this.load == true) {
-      if (this.props.atomsMarked) {
-        this.load = false;
+      this.load = false;
+      if (this.props.markAtoms) {
         this.jsmeApplet.resetAtomColors(0)
-        this.atomMarker(this.props.atomsMarked);
+        this.atomMarker(this.props.markAtoms);
       }
-      if (this.props.bondsMarked) {
+      if (this.props.markBonds) {
         this.jsmeApplet.resetBondColors(0)
-        this.jsmeApplet.setBondBackgroundColors(0, this.props.bondsMarked);
+        this.jsmeApplet.setBondBackgroundColors(0, this.props.markBonds);
       }
     }
+
     // return event information
     if (this.props.atomEvent) {
       let info = {'action': jsmeEvent.action,
@@ -133,16 +135,50 @@ export class Jsme extends React.PureComponent {
                   'origin': jsmeEvent.origin,
                 }
 
-    // get bond color information
-    if (jsmeEvent.src.g.b.p && parseInt(jsmeEvent.bond) > 0) {
-      info.bondColor = jsmeEvent['src']['g']['b']['p']['c'][jsmeEvent.bond]['x'][0];
-      console.log(jsmeEvent['src']['g']['b']['p']['c'][jsmeEvent.bond]['x'])
-    }
+    // get bond color information from src since not in jsmeEvent
+      if (jsmeEvent.src.g.b.p && parseInt(jsmeEvent.bond) > 0) {
+        info.bondColor = jsmeEvent['src']['g']['b']['p']['c'][jsmeEvent.bond]['x'][0];
+      }
       this.props.atomEvent(info)
     }
     // molecule update function callback
     if (this.props.onChange) {
       this.props.onChange(jsmeEvent.src.smiles(),jsmeEvent.src.molFile());
+    }
+    // marked Bonds list
+    if (jsmeEvent.action == 'markBond' || jsmeEvent.action == 'unMarkBond') {
+      // get bond color from src since not in jsmeEvent
+      let bondColor = jsmeEvent['src']['g']['b']['p']['c'][jsmeEvent.bond]['x'];
+      let marked = this.markedBonds.split(',');
+      for (let i=0;i<marked.length;i+=2) {
+          marked.splice(i,2)
+        }
+      if (jsmeEvent.action == 'markBond') {
+        marked.push(jsmeEvent.bond);
+        marked.push(bondColor[0]);
+      }
+      this.markedBonds = marked.join();
+      if (this.props.bondsMarked) {
+        this.props.bondsMarked(this.markedBonds);
+      }
+    }
+    // marked Atoms list
+    if (jsmeEvent.action == 'markAtom' || jsmeEvent.action == 'unMarkAtom') {
+      let atomColor = jsmeEvent.atomBackgroundColorIndex;
+      let marked = this.markedAtoms.split(',');
+      for (let i=0;i<marked.length;i+=2) {
+        if (marked[i] == jsmeEvent.atom.toString()) {
+            marked.splice(i,2)
+        }
+      }
+      if (jsmeEvent.action == 'markAtom') {
+        marked.push(jsmeEvent.atom);
+        marked.push(atomColor);
+      }
+      this.markedAtoms = marked.join();
+      if (this.props.atomsMarked) {
+        this.props.atomsMarked(this.markedAtoms);
+      }
     }
   }
 
@@ -159,7 +195,7 @@ export class Jsme extends React.PureComponent {
 
   }
 
-  //unset callbs on unmount
+  //unset callbacks on unmount
   componentWillUnmount() {
     jsmeCallbacks[this.id] = undefined;
   }
@@ -182,15 +218,15 @@ export class Jsme extends React.PureComponent {
       if (this.props.lineWidth !== prevProps.lineWidth) {
         this.jsmeApplet.setMolecularAreaLineWidth(this.props.lineWidth);
       }
-      if (this.props.atomsMarked != prevProps.atomsMarked) {
-        this.jsmeApplet.resetAtomColors(0)
-        this.atomMarker(this.props.atomsMarked);
-        // this.jsmeApplet.setAtomBackgroundColors(0, this.props.atomsMarked);
+      if (this.props.markAtoms != prevProps.markAtoms) {
+        this.jsmeApplet.resetAtomColors(0);
+        this.atomMarker(this.props.markAtoms);
+        this.markedAtoms = this.props.markAtoms;
       }
-      if (this.props.bondsMarked != prevProps.bondsMarked) {
-        console.log(this.props.bondsMarked)
-        this.jsmeApplet.resetBondColors(0)
-        this.jsmeApplet.setBondBackgroundColors(0, this.props.bondsMarked);
+      if (this.props.markBonds != prevProps.markBonds) {
+        this.jsmeApplet.resetBondColors(0);
+        this.jsmeApplet.setBondBackgroundColors(0, this.props.markBonds);
+        this.markedBonds = this.props.markBonds;
       }
       if (this.props.actionCode != prevProps.actionCode && this.props.actionCode !== null) {
         this.jsmeApplet.setAction(parseInt(this.props.actionCode));
@@ -214,11 +250,13 @@ Jsme.propTypes = {
   atomEvent: PropTypes.func,
   src: PropTypes.string,
   lineWidth: PropTypes.number,
-  atomHighlight: PropTypes.func,
-  bondHighlight: PropTypes.func,
-  atomClick: PropTypes.func,
-  bondClick: PropTypes.func,
-  atomsMarked: PropTypes.string,
-  bondsMarked: PropTypes.string,
+  atomHighlighted: PropTypes.func,
+  bondHighlighted: PropTypes.func,
+  atomClicked: PropTypes.func,
+  bondClicked: PropTypes.func,
+  atomsMarked: PropTypes.func,
+  bondsMarked: PropTypes.func,
+  markAtoms: PropTypes.string,
+  markBonds: PropTypes.string,
   actionCode: PropTypes.number,
 }
