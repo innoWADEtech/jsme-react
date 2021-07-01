@@ -6,7 +6,7 @@ let jsmeIsLoaded = false;
 const jsmeCallbacks = {};
 
 // Export the setup function so that a user can override the super-lazy loading behaviour and choose to load it more eagerly.
-export function setup(src = "https://jsme.cloud.douglasconnect.com/JSME_2017-02-26/jsme/jsme.nocache.js") {
+export function setup(src = "https://innowadetech.github.io/jsme-editor.github.io/dist/jsme/jsme.nocache.js") {
   const script = document.createElement('script');
   script.src = src;
   document.head.appendChild(script);
@@ -43,6 +43,9 @@ export class Jsme extends React.PureComponent {
       // Need to read smiles with function so can  mark Atoms and Bonds on callback
       if (this.props.smiles) {
       await this.jsmeApplet.readGenericMolecularInput(this.props.smiles, true);
+      }
+      if (this.props.molFile) {
+        await this.jsmeApplet.readMoleFile(this.props.molFile)
       }
 
       // mol File can be marked without callback needed
