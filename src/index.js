@@ -84,11 +84,10 @@ export class Jsme extends React.PureComponent {
     }
     for (let i = 0; i < atomList.length; i +=2) {
         let num = 3 * parseInt(atomList[i]) -1 
-        console.log(num)
         molList[num] += `:${atomList[i+1]}`
     }
     mol2 = molList.join(' ')
-    this.jsmeApplet.readMolecule(mol2);
+    this.jsmeApplet.readGenericMolecularInput(mol2, true);
   }
 
   // bondHighlight function callback
