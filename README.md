@@ -1,5 +1,7 @@
 # jsme-react
-Customized jsme-react to use as component in dash with atom and bond click and highlight as well as atom and bond marking. 
+Customized jsme-react to use as component in dash pltoly with atom and bond click and highlight as well as atom and bond marking. 
+The smiles, atomsMark, bondsMark use object with id to ensure update from dash component since this is a pure component.
+The jsme editor has issues with molecule duplication if rendered multiple times
 
 This project wraps the BSD licensed [JSME molecule editor](https://peter-ertl.com/jsme/) (by B. Bienfait and P. Ertl) in a React component for easy use in React apps.
 
@@ -46,12 +48,18 @@ Required props
 
 Optional props
 * `options`: string that is a comma separated string of JSME options. The available options are described on the [JSME documentation page](https://peter-ertl.com/jsme/JSME_2017-02-26/doc.html#JSME_API)
-* `onChange`: event handler that is passed the smiles, molFile whenever it is changed in the editor
-* `atomEvent`: event handler that is passed with event information whenever it is changed in the editor
-* `smiles`: the smiles to display (when not set an empty canvas will be shown)
-* `molFile`: the molFile V2 to display (when not set an empty canvas will be shown)
-* `src`: url of the jsme source code. Default value is `"https://jsme.cloud.douglasconnect.com/JSME_2017-02-26/jsme/jsme.nocache.js"`
-
+* `onChange`: event handler that is passed with smiles string whenever it is changed in the editor
+* `jmeEvent`: event handler that is passed with event information whenever it is changed in the editor
+* `smiles`: object, the smiles to display (when not set an empty canvas will be shown) {id: 0, string: CCCCC} 
+* `src`: url of the jsme source code. Default value is `"https://unpkg.com/jsme-editor/jsme.nocache.js"`
+* `lineWidth`: number, 2
+* `atomHover`: callback function for atom hover
+* `bondHover`: callback function for bond hover
+* `atomClicked`: callback function for atom clicked
+* `bondClicked`: callback function for bond clicked
+* `atomsMark`: object, list of atom, color (1-6) to mark, {id: 0, string: '1,1,2,6'}
+* `bondsMark`: object, list of bond, color (1-6) to mark, {id: 0, string: '1,1,2,6'}
+* `actionCode`: number, set menu action code, 105
 
 # Development
 
